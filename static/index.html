@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Dashboard</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap">
+    <style>
+        body {
+            background-color: #E7EAF0;
+            color: #393B3D;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .header {
+            background-color: #FCFBFC;
+            color: #393B3D;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        /* Filters Section */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            background-color: #FCFBFC;
+            padding: 20px;
+            border-radius: 12px;
+            align-items: center;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-item label {
+            color: #6C63FF;
+            font-weight: 500;
+        }
+
+        .filter-item select,
+        .filter-item input {
+            background-color: #FCFBFC;
+            color: #393B3D;
+            border: 1px solid #A8D0E6;
+            font-size: 16px;
+            border-radius: 8px;
+            padding: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .filter-item select:focus,
+        .filter-item input:focus {
+            border-color: #5373F2;
+        }
+
+        /* Apply Button */
+        .btn {
+            background-color: #8D96E7; /* Darker shade of purple */
+            color: #FCFBFC;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            align-self: flex-end; /* Aligns the button to the end of the row */
+        }
+
+        .btn:hover {
+            background-color: #5548C4; /* Darker hover effect */
+        }
+
+        /* Flight Stats Section */
+        .flight-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .stat-box {
+            background-color: #FCFBFC;
+            padding: 30px;
+            border-radius: 15px;
+            flex: 1;
+            min-width: 180px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-box h2 {
+            font-size: 48px;
+            color: #393B3D; /* Darker shade for numbers */
+            margin: 0 0 10px;
+        }
+
+        .stat-box p {
+            font-size: 18px;
+            color: #6C63FF;
+            margin: 0;
+        }
+
+        /* Table Section */
+        .table {
+            background-color: #FCFBFC;
+            padding: 20px;
+            border-radius: 15px;
+            overflow-x: auto;
+        }
+
+        .table-header,
+        .table-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .table-header {
+            border-bottom: 2px solid #E7EAF0;
+        }
+
+        .table-header span {
+            font-weight: 600;
+            color: #6C63FF;
+            font-size: 16px;
+        }
+
+        .table-row {
+            border-bottom: 1px solid #E7EAF0;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-cell {
+            color: #393B3D;
+            font-size: 15px;
+        }
+
+        .table-row:hover {
+            background-color: #F8F9FB;
+        }
+
+        /* Dynamic Status Colors */
+        .status-landed {
+            color: #28A745; /* Green */
+        }
+
+        .status-cancelled {
+            color: #DC3545; /* Red */
+        }
+
+        .status-delayed {
+            color: #FFC107; /* Yellow */
+        }
+
+        /* Media Query for Small Screens */
+        @media (max-width: 768px) {
+            .table-header,
+            .table-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Flight Dashboard</h1>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters">
+            <div class="filter-item">
+                <label for="airport">Airport:</label>
+                <select id="airport" name="airport">
+                    <option value="">All Airports</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label for="time-range">Time Range:</label>
+                <select id="time-range" name="time-range">
+                    <option value="last_24_hours">Last 24 Hours</option>
+                    <option value="today">Today</option>
+                </select>
+            </div>
+            <button class="btn" onclick="loadDashboardData()">Apply Filters</button>
+        </div>
+
+        <!-- Flight Statistics Section -->
+        <div class="flight-stats">
+            
+            <div class="stat-box">
+                <h2 id="on-time-flights">0</h2>
+                <p>On-Time</p>
+            </div>
+            <div class="stat-box">
+                <h2 id="delayed-flights">0</h2>
+                <p>Delayed</p>
+            </div>
+            <div class="stat-box">
+                <h2 id="cancelled-flights">0</h2>
+                <p>Canceled</p>
+            </div>
+            <div class="stat-box">
+                <h2 id="landed-flights">0</h2>
+                <p>Landed</p>
+            </div>
+        
+            <div class="stat-box">
+                <h2 id="total-flights">0</h2>
+                <p>Total Flights</p>
+            </div>
+        </div>
+
+        <!-- Flight Table Section -->
+        <div class="table">
+            <div class="table-header">
+                <span>Flight</span>
+                <span>Status</span>
+                <span>Departure</span>
+                <span>Arrival</span>
+                <span>From</span>
+                <span>To</span>
+            </div>
+
+            <div id="flight-table">
+                <!-- Flight data will be inserted here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        async function populateAirports() {
+            try {
+                const response = await fetch('/flights/airports');
+                const airports = await response.json();
+                const airportSelect = document.getElementById('airport');
+
+                airports.forEach(code => {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = code;
+                    airportSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching airports:', error);
+            }
+        }
+
+        async function loadDashboardData() {
+            const airport = document.getElementById("airport").value || '';
+            const timeRange = document.getElementById("time-range").value || 'last_24_hours';
+
+            const response = await fetch(`${window.location.origin}/flights/dashboard/data?airport=${airport}&time_range=${timeRange}`);
+            const data = await response.json();
+
+            // Update flight statistics
+            document.getElementById("total-flights").textContent = data.total_flights;
+            document.getElementById("on-time-flights").textContent = data.on_time;
+            document.getElementById("delayed-flights").textContent = data.delayed;
+            document.getElementById("cancelled-flights").textContent = data.cancelled;
+            document.getElementById("landed-flights").textContent = data.landed;
+
+            // Clear and update flight table
+            const flightTable = document.getElementById("flight-table");
+            flightTable.innerHTML = ""; // Clear previous entries
+
+            data.flights.forEach(flight => {
+                const row = document.createElement("div");
+                row.classList.add("table-row");
+
+                // Apply dynamic status coloring
+                let statusClass = '';
+                if (flight.status === 'landed') {
+                    statusClass = 'status-landed';
+                } else if (flight.status === 'cancelled') {
+                    statusClass = 'status-cancelled';
+                } else if (flight.status === 'delayed') {
+                    statusClass = 'status-delayed';
+                }
+
+                row.innerHTML = `
+                    <div class="table-cell">${flight.icao}</div>
+                    <div class="table-cell ${statusClass}">${flight.status}</div>
+                    <div class="table-cell">${formatDateTime(flight.scheduled_departure)}</div>
+                    <div class="table-cell">${formatDateTime(flight.scheduled_arrival)}</div>
+                    <div class="table-cell">${flight.source}</div>
+                    <div class="table-cell">${flight.destination}</div>
+                `;
+
+                flightTable.appendChild(row);
+            });
+        }
+
+        function formatDateTime(dateTimeStr) {
+            const options = {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit',
+                timeZoneName: 'short'  // Display the timezone
+            };
+            return new Date(dateTimeStr).toLocaleDateString(undefined, options);
+        }
+
+        // Load airports and dashboard data on page load
+        window.onload = async function() {
+            await populateAirports();
+            loadDashboardData(); // By default, load all airports
+        };
+    </script>
+</body>
+</html>
